@@ -208,11 +208,11 @@ ggplot(aes(x = year, y = pred,
   ggplot2::scale_fill_viridis_d(direction = 1) +
   ggplot2::scale_colour_viridis_d(direction = 1)
 
-ggsave(here::here('results', 'base_by_strata', 'fits_by_strata.png'), units = 'in',
+ggsave(here::here('results', 'compare_by_strata_vs_goa_wide.png'), units = 'in',
        height = 9, width = 9, dpi = 300, bg = 'white')
 
 # note that the fits are very similar but are in fact different (the underlying
-# data going in is summarised differently and the stratified model has three
+# data going in is summarized differently and the stratified model has three
 # process error parameters whereas the goa-wide model only has one per species
 # group). i recommend just picking one instead of presenting both because it's
 # otherwise confusing to the reader....
@@ -232,7 +232,7 @@ twosrv_bs_input <- prepare_rema_input(multi_survey = 1, # use two indices of abu
                                         select(-species_group),
                                       sum_cpue_index = TRUE, # is the CPUE index summable? yes, RPNs are summable because they're area-weighted
                                       end_year = 2023, # you can define the last year for model predictions, defaults to last year of data
-                                      model_name = 'big_skate_with_lls')
+                                      model_name = 'big_skate_two_surveys')
 twosrv_bs_mod <- fit_rema(twosrv_bs_input)
 twosrv_bs_out <- tidy_rema(twosrv_bs_mod)
 twosrv_bs_plots <- plot_rema(twosrv_bs_out, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative population numbers')
@@ -252,7 +252,7 @@ twosrv_ln_input <- prepare_rema_input(multi_survey = 1, # use two indices of abu
                                         select(-species_group),
                                       sum_cpue_index = TRUE, # is the CPUE index summable? yes, RPNs are summable because they're area-weighted
                                       end_year = 2023, # you can define the last year for model predictions, defaults to last year of data
-                                      model_name = 'longnose_skate_with_lls')
+                                      model_name = 'longnose_skate_two_surveys')
 twosrv_ln_mod <- fit_rema(twosrv_ln_input)
 twosrv_ln_out <- tidy_rema(twosrv_ln_mod)
 twosrv_ln_plots <- plot_rema(twosrv_ln_out, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative population numbers')
@@ -272,7 +272,7 @@ twosrv_os_input <- prepare_rema_input(multi_survey = 1, # use two indices of abu
                                         select(-species_group),
                                       sum_cpue_index = TRUE, # is the CPUE index summable? yes, RPNs are summable because they're area-weighted
                                       end_year = 2023, # you can define the last year for model predictions, defaults to last year of data
-                                      model_name = 'other_skates_with_lls')
+                                      model_name = 'other_skates_two_surveys')
 twosrv_os_mod <- fit_rema(twosrv_os_input)
 twosrv_os_out <- tidy_rema(twosrv_os_mod)
 twosrv_os_plots <- plot_rema(twosrv_os_out, biomass_ylab = 'Biomass (t)', cpue_ylab = 'Relative population numbers')
@@ -280,4 +280,16 @@ twosrv_os_p1 <- twosrv_os_plots$biomass_by_strata + ggtitle('Other skates bottom
 twosrv_os_p2 <- twosrv_os_plots$cpue_by_strata + ggtitle('Other skates IPHC relative populations numbers')
 cowplot::plot_grid(twosrv_os_p1, twosrv_os_p2, ncol = 1)
 ggsave(here::here('results', 'two_surveys', 'other_skates_fits_two_surveys.png'), units = 'in',
+       height = 9, width = 9, dpi = 300, bg = 'white')
+
+# compare all methods ----
+
+p1 <- compare_rema_models(rema_models = list(bs_mod, strata_bs_mod, twosrv_bs_mod), biomass_ylab = 'Biomass (t)')$plots$total_predicted_biomass +
+  ggtitle('Big skates')
+p2 <- compare_rema_models(rema_models = list(ln_mod, strata_ln_mod, twosrv_ln_mod), biomass_ylab = 'Biomass (t)')$plots$total_predicted_biomass +
+  ggtitle('Longnose skates')
+p3 <- compare_rema_models(rema_models = list(os_mod, strata_os_mod, twosrv_os_mod), biomass_ylab = 'Biomass (t)')$plots$total_predicted_biomass +
+  ggtitle('Other skates')
+cowplot::plot_grid(p1, p2, p3, ncol = 1)
+ggsave(here::here('results', 'compare_by_strata_vs_goa_wide_vs_two_surveys.png'), units = 'in',
        height = 9, width = 9, dpi = 300, bg = 'white')
